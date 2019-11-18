@@ -18,12 +18,20 @@
 CMAKE           ?= cmake
 CTEST           ?= ctest
 
-.PHONY: all clean distclean distcheck 
-all:
-	$(MAKE) -C ../cl_build # make sure that libcl.a is up2date
+.PHONY: all check clean distclean distcheck
+
+all: ../cl_build/Makefile
+	# make sure that libcl.a is up2date
+	$(MAKE) -C ../cl_build
 	mkdir -p ../json_build
 	cd ../json_build && $(CMAKE) ../json
 	$(MAKE) -C ../json_build
+
+../cl_build/Makefile:
+	test -e $@ || $(MAKE) -C ../cl
+
+check: all
+	cd ../json_build && $(CTEST) --output-on-failure
 
 clean:
 	if test -e ../json_build/Makefile; then \
