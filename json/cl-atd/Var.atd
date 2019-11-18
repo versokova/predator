@@ -1,0 +1,21 @@
+type cl_loc <ocaml from="Loc" t="t"> = abstract
+
+type insn <ocaml from="Fnc" t="insn"> = abstract
+
+type t = {
+  code : var_e;
+  ?loc : cl_loc option;
+  typ : int; (* cl_type.uid *)
+  ?name : string option;
+  ~initials : insn list; (* option? *)
+  initialized : bool;
+  ~is_extern <ocaml default="false">: bool;
+  ~may_be_pointed : bool;
+}
+
+type var_e = [
+    VAR_VOID
+  | VAR_GL
+  | VAR_LC
+  | VAR_FNC_ARG
+] <ocaml repr="classic">

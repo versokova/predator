@@ -103,11 +103,12 @@ if(ENABLE_LLVM) # -----------------------------------------------------------
         set(cmd "${cmd} ${OPT_HOST} -o /dev/null -lowerswitch")
 
         set(cmd "${cmd} -load ${json_BINARY_DIR}/libjson${CMAKE_SHARED_LIBRARY_SUFFIX} -json")
-        set(cmd "${cmd} ${arg1}")
-        set(cmd "${cmd} -preserve-ec")
 
         # basic check json
-        set(cmd "${cmd} | ydump")
+        set(cmd "${cmd} | ydump ")
+
+        # check atd
+        set(cmd "${cmd} | ${json_BINARY_DIR}/check > /dev/null")
         set(test_name "test-${num}.c")
         add_test(${test_name} bash -o pipefail -c "${cmd}")
 
@@ -131,13 +132,12 @@ else() # --------------------------------------------------------------------
         set(cmd "${cmd} -S ${testdir}/test-${num}.c -o /dev/null")
         set(cmd "${cmd} -I../include/predator-builtins -DPREDATOR")
         set(cmd "${cmd} -fplugin=${json_BINARY_DIR}/libjson.so ${arg1}")
-        set(cmd "${cmd} -fplugin-arg-libjson-preserve-ec")
-
-        # errors of json
-        #set(cmd "${cmd} 2> ")
 
         # basic check json
-        set(cmd "${cmd} | ydump")
+        set(cmd "${cmd} | ydump ")
+
+        # check atd
+        set(cmd "${cmd} | ${json_BINARY_DIR}/check > /dev/null")
         set(test_name "test-${num}.c")
         add_test(${test_name} bash -o pipefail -c "${cmd}")
 
