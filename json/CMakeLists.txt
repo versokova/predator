@@ -37,6 +37,112 @@ add_library(json_core STATIC
 # build compiler plug-in (libjson.so/.dylib)
 CL_BUILD_COMPILER_PLUGIN(json json_core ../cl_build)
 
+# get the full path of libjson.so/.dylib
+get_property(JSON_PLUG TARGET json PROPERTY LOCATION)
+message (STATUS "JSON_PLUG: ${JSON_PLUG}")
+
 # make install
 install(TARGETS json DESTINATION lib)
 
+set(testdir "${json_SOURCE_DIR}/../tests/predator-regre")
+
+set(tests
+         0001 0002 0003 0004 0005 0006 0007 0008 0009
+    0010 0011 0012 0013 0014 0015 0016 0017 0018 0019
+    0020      0022 0023 0024 0025 0026 0027 0028 0029
+    0030 0031 0032 0033 0034 0035 0036 0037 0038 0039
+    0040 0041 0042 0043 0044 0045 0046 0047 0048 0049
+    0050 0051 0052 0053 0054 0055 0056 0057 0058 0059
+    0060 0061 0062 0063 0064 0065 0066 0067 0068 0069
+    0070 0071 0072 0073 0074 0075 0076 0077 0078 0079
+    0080 0081 0082 0083 0084 0085 0086 0087 0088 0089
+    0090 0091 0092 0093 0094 0095 0096 0097 0098 0099
+    0100 0101 0102 0103 0104 0105      0107 0108 0109
+    0110 0111 0112      0114 0115 0116 0117 0118 0119
+    0120 0121 0122 0123 0124 0125 0126 0127 0128 0129
+    0130 0131 0132 0133 0134 0135 0136 0137 0138 0139
+    0140 0141 0142 0143 0144 0145 0146 0147 0148 0149
+    0150 0151 0152 0153 0154 0155 0156 0157 0158 0159
+    0160 0161 0162 0163 0164      0166 0167 0168
+    0170 0171 0172 0173 0174 0175 0176 0177 0178 0179
+    0180 0181 0182 0183 0184 0185 0186 0187 0188 0189
+    0190 0191 0192 0193 0194 0195 0196 0197 0198 0199
+    0200 0201 0202 0203 0204 0205      0207 0208 0209
+    0210      0212      0214 0215      0217 0218 0219
+    0220 0221 0222 0223 0224 0225 0226 0227 0228 0229
+    0230 0231 0232 0233 0234 0235 0236 0237 0238 0239
+    0240 0241 0242 0243 0244 0245 0246 0247 0248 0249
+    0250 0251 0252 0253 0254 0255
+    0300      0302                          0308 0309
+    0310 0311 0312      0314 0315 0316      0318
+    0400 0401 0402 0403 0404 0405 0406 0407 0408 0409
+    0410 0411 0412 0413 0414 0415 0416 0417 0418
+              0432
+    0500 0501 0502 0503 0504 0505           0508 0509
+    0510 0511 0512 0513 0514 0515 0516 0517 0518
+    0520 0521
+         0601 0602 0603 0604 0605 0606 0607 0608 0609
+    0610 0611 0612 0613 0614 0615
+
+    0021 0106 0113 0165 0169 0206 0211 0213 0216 0301
+    0313 0317 0319 0419 0506 0507 0519 0600)
+
+set(cost 1)
+
+if(ENABLE_LLVM) # -----------------------------------------------------------
+	set(cmd_cc1 "-S -emit-llvm")
+
+    foreach (num ${tests})
+        set(cmd "LC_ALL=C CCACHE_DISABLE=1 ${CLANG_HOST}")
+
+        # we use the following flag to avoid differences on 32bit vs 64bit archs
+        # in the error output, which is checked for exact match
+        set(cmd "${cmd} -w -g -m32 ${cmd_cc1}")
+        set(cmd "${cmd} -I../include/predator-builtins -DPREDATOR")
+        set(cmd "${cmd} ${testdir}/test-${num}.c -o - | ")
+        set(cmd "${cmd} ${OPT_HOST} -o /dev/null -lowerswitch")
+
+        set(cmd "${cmd} -load ${json_BINARY_DIR}/libjson${CMAKE_SHARED_LIBRARY_SUFFIX} -json")
+        set(cmd "${cmd} ${arg1}")
+        set(cmd "${cmd} -preserve-ec")
+
+        # basic check json
+        set(cmd "${cmd} | ydump")
+        set(test_name "test-${num}.c")
+        add_test(${test_name} bash -o pipefail -c "${cmd}")
+
+        SET_TESTS_PROPERTIES(${test_name} PROPERTIES COST ${cost})
+        MATH(EXPR cost "${cost} + 1")
+    endforeach()
+
+else() # --------------------------------------------------------------------
+    foreach (num ${tests})
+        set(cmd "LC_ALL=C CCACHE_DISABLE=1 ${GCC_HOST}")
+
+        # we use the following flag to avoid differences on 32bit vs 64bit archs
+        # in the error output, which is checked for exact match
+        set(cmd "${cmd} -m32")
+
+        # use C++ compiler if requested:
+        if (ENABLE_CC1_PLUS)
+            set(cmd "${cmd} -x c++")
+        endif()
+
+        set(cmd "${cmd} -S ${testdir}/test-${num}.c -o /dev/null")
+        set(cmd "${cmd} -I../include/predator-builtins -DPREDATOR")
+        set(cmd "${cmd} -fplugin=${json_BINARY_DIR}/libjson.so ${arg1}")
+        set(cmd "${cmd} -fplugin-arg-libjson-preserve-ec")
+
+        # errors of json
+        #set(cmd "${cmd} 2> ")
+
+        # basic check json
+        set(cmd "${cmd} | ydump")
+        set(test_name "test-${num}.c")
+        add_test(${test_name} bash -o pipefail -c "${cmd}")
+
+        SET_TESTS_PROPERTIES(${test_name} PROPERTIES COST ${cost})
+        MATH(EXPR cost "${cost} + 1")
+    endforeach()
+
+endif() #--------------------------------------------------------------------
