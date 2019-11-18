@@ -1,0 +1,12 @@
+type t = {
+  types : (int * cl_type) list;
+  vars : (int * var) list;
+  fncs : (int * fnc) list;
+  (* callgraph *)
+}
+
+type cl_type <ocaml from="Type" t="t"> = abstract
+
+type var <ocaml from="Var" t="t"> = abstract
+
+type fnc <ocaml from="Fnc" t="t"> = abstract

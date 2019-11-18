@@ -1,0 +1,39 @@
+type cl_loc <ocaml from="Loc" t="t"> = abstract
+
+type cl_scope_e <ocaml from="Loc" t="cl_scope_e"> = abstract
+
+type t = {
+  code : cl_type_e;
+  ?loc : cl_loc option;
+  scope : cl_scope_e;
+  ?name : string option;
+  size : int;
+  ~is_unsigned : bool;
+  is_const : bool;
+  (* ptr_type *)
+}
+
+type cl_type_e = [
+    TypeVoid
+  | TypeUnknown
+  | TypePtr of int (* cl_type.uid *)
+  | TypeStruct of cl_type_item list
+     <ocaml repr="array">
+  | TypeUnion of cl_type_item list
+     <ocaml repr="array">
+  | TypeArray of (int * int) (* array_size * cl_type.uid f elm *)
+  | TypeFnc of cl_type_item list
+     <ocaml repr="array">
+  | TypeInt
+  | TypeChar
+  | TypeBool
+  | TypeEnum
+  | TypeReal
+  | TypeString
+] <ocaml repr="classic">
+
+type cl_type_item = {
+  typ : int; (* cl_type.uid of this nested type *)
+  ?name : string option;
+  ~offset : int;
+}    <ocaml field_prefix="item_">
