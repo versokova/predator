@@ -30,7 +30,11 @@ all: ../cl_build/Makefile
 ../cl_build/Makefile:
 	test -e $@ || $(MAKE) -C ../cl
 
-check: all
+atd:
+	mkdir -p ../json_build
+	./make.sh
+
+check: all atd
 	cd ../json_build && $(CTEST) --output-on-failure
 
 clean:

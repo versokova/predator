@@ -1,0 +1,8 @@
+(* file, line, column, [sysp not used] *)
+type t = (string * int * int * <ocaml default="false"> : bool)
+
+type cl_scope_e = [
+    CL_SCOPE_GLOBAL
+  | CL_SCOPE_STATIC
+  | CL_SCOPE_FUNCTION
+] <ocaml repr="classic">

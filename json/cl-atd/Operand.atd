@@ -1,0 +1,54 @@
+type cl_loc <ocaml from="Loc" t="t"> = abstract
+
+type cl_scope_e <ocaml from="Loc" t="cl_scope_e"> = abstract
+
+type t = {
+  scope : cl_scope_e;
+  ~typ : int; (* cl_type.uid *)
+  ~accessor : cl_accessor list;
+  ~data <ocaml default="OpVoid"> : op_data_e;
+}
+
+type op_data_e = [
+    OpVar of int (* var.uid *)
+  | OpCst of cl_cst
+  | OpVoid
+] <ocaml repr="classic">
+
+type cl_cst = {
+  data : cst_data_e;
+}    <ocaml field_prefix="cst_">
+
+type cst_data_e = [
+    CstPtr of int (* 0 == nullptr *)
+  | CstStruct (* ? compound literal - not supported *)
+  | CstUnion (* ? compound literal - not supported *)
+  | CstArray (* ? compound literal : int[2]{1,2} - not supported *)
+  | CstFnc of cl_cst_fnc
+  | CstInt of int <ocaml repr="int64">
+  | CstEnum of int
+  | CstChar of int <ocaml repr="char">
+  | CstBool of bool
+  | CstReal of float
+  | CstString of string
+] <ocaml repr="classic">
+
+type cl_cst_fnc = {
+    uid : int; (* fnc.uid redundant! *)
+    ?name : string option;
+    ~is_extern <ocaml default="false"> : bool; 
+    ?loc : cl_loc option
+} 
+
+type cl_accessor = {
+  typ : int; (* cl_type.uid *)
+  data : acc_data_e;
+}    <ocaml field_prefix="acc_">
+
+type acc_data_e = [
+  | Ref
+  | Deref
+  | DerefArray of t (* operand as index *)
+  | Item of int (* id *)
+  | Offset of int (* operand? *)
+] <ocaml repr="classic">

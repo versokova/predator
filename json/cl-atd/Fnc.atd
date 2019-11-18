@@ -1,0 +1,82 @@
+type cl_loc <ocaml from="Loc" t="t"> = abstract
+
+type cl_operand <ocaml from="Operand" t="t"> = abstract
+
+(* type state <ocaml from="State" t="t"> = abstract *)
+
+type t = {
+  def : cl_operand;
+  ~vars : int list; (* var.uid *)
+  ~args : int list (* var.uid of arguments *)
+   <ocaml repr="array">;
+  ?cfg : block list option; (* None - extern fnc, Some [] - empty *)
+  (* ?specs <ocaml mutable> : state option; *)
+}
+
+type block = {
+  uid : int;
+  name : string;
+  insns : insn list;
+  inbounds : int list; (* block.uid list *)
+}
+
+
+type insn = {
+  code : cl_insn_e;
+  ?loc : cl_loc option;
+  ?loop_closing_targets <ocaml mutable> : int list option;
+  (* ?specs <ocaml mutable> : state option; *)
+}
+
+type cl_insn_e = [
+    InsnNOP
+  | InsnJMP of int (* target (block.uid) *)
+  | InsnCOND of (cl_operand * int * int) (* cond * target_then * target_else *)
+  | InsnRET of cl_operand (* value to return *)
+  | InsnCLOBBER of cl_operand (* variable *)
+  | InsnABORT
+  | InsnUNOP of (cl_unop_e * cl_operand * cl_operand ) (* code * dst * src *)
+  | InsnBINOP of (cl_binop_e * cl_operand * cl_operand * cl_operand ) (* code * dst * src1 * src2 *)
+  | InsnCALL of cl_operand list (* dst, called, ?args+ *)
+  | InsnSWITCH of (cl_operand * int) list (* (value to switch, default target), (case, target)+ *)
+  | InsnLABEL of string (* not useful *)
+] <ocaml repr="classic">
+
+type cl_unop_e = [
+    CL_UNOP_ASSIGN
+  | CL_UNOP_TRUTH_NOT
+  | CL_UNOP_BIT_NOT
+  | CL_UNOP_MINUS
+  | CL_UNOP_ABS
+  | CL_UNOP_FLOAT
+] <ocaml repr="classic">
+
+type cl_binop_e = [
+    CL_BINOP_EQ
+  | CL_BINOP_NE
+  | CL_BINOP_LT
+  | CL_BINOP_GT
+  | CL_BINOP_LE
+  | CL_BINOP_GE
+  | CL_BINOP_TRUTH_AND
+  | CL_BINOP_TRUTH_OR
+  | CL_BINOP_TRUTH_XOR
+  | CL_BINOP_PLUS
+  | CL_BINOP_MINUS
+  | CL_BINOP_MULT
+  | CL_BINOP_EXACT_DIV
+  | CL_BINOP_TRUNC_DIV
+  | CL_BINOP_TRUNC_MOD
+  | CL_BINOP_RDIV
+  | CL_BINOP_MIN
+  | CL_BINOP_MAX
+  | CL_BINOP_POINTER_PLUS
+  | CL_BINOP_BIT_AND
+  | CL_BINOP_BIT_IOR
+  | CL_BINOP_BIT_XOR
+  | CL_BINOP_LSHIFT
+  | CL_BINOP_RSHIFT
+  | CL_BINOP_LROTATE
+  | CL_BINOP_RROTATE
+  | CL_BINOP_UNKNOWN
+] <ocaml repr="classic">

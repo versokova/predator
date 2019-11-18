@@ -59,12 +59,12 @@ static inline const char * to_string(enum cl_type_e typ) {
 /// special variant for cst
 static inline const char * to_string_cst(enum cl_type_e typ) {
     static const char * str[] = {
-        /* CL_TYPE_VOID    */ "\"CstVoid?\"",
-        /* CL_TYPE_UNKNOWN */ "\"CstUnknown?\"",
+        /* CL_TYPE_VOID    */ "\"CstVoid\"",
+        /* CL_TYPE_UNKNOWN */ "\"CstUnknown\"",
         /* CL_TYPE_PTR     */ "\"CstPtr\"",     // NULL only
-        /* CL_TYPE_STRUCT  */ "\"CstStruct?\"",
-        /* CL_TYPE_UNION   */ "\"CstUnion?\"",
-        /* CL_TYPE_ARRAY   */ "\"CstArray?\"",
+        /* CL_TYPE_STRUCT  */ "\"CstStruct\"",
+        /* CL_TYPE_UNION   */ "\"CstUnion\"",
+        /* CL_TYPE_ARRAY   */ "\"CstArray\"",
         /* CL_TYPE_FNC     */ "\"CstFnc\"",
         /* CL_TYPE_INT     */ "\"CstInt\"",
         /* CL_TYPE_CHAR    */ "\"CstChar\"",
@@ -114,6 +114,7 @@ static inline const char * to_string(enum cl_insn_e instruction) {
         /* CL_INSN_JMP     */ "\"InsnJMP\"",
         /* CL_INSN_COND    */ "\"InsnCOND\"",
         /* CL_INSN_RET     */ "\"InsnRET\"",
+        /* CL_INSN_CLOBBER */ "\"InsnCLOBBER\"",
         /* CL_INSN_ABORT   */ "\"InsnABORT\"",
         /* CL_INSN_UNOP    */ "\"InsnUNOP\"",
         /* CL_INSN_BINOP   */ "\"InsnBINOP\"",
@@ -465,8 +466,11 @@ static std::string to_json(const struct cl_insn &i) {
     case CL_INSN_RET:
             out << INDENT << to_json(*i.data.insn_ret.src) << "\n";
             break;
+    case CL_INSN_CLOBBER:
+            out << INDENT << to_json(*i.data.insn_ret.var) << "\n";
+            break;
     case CL_INSN_ABORT: // TODO
-            out << "\n\n**********ERROR-abort-\n\n";
+            CL_ERROR("abort instruction");
             break;
     case CL_INSN_UNOP:  //
             out << INDENT << "(<" << to_string_unop(i.data.insn_unop.code) << ">,\n";
@@ -482,16 +486,16 @@ static std::string to_json(const struct cl_insn &i) {
             out << INDENT << ")\n";
             break;
     case CL_INSN_CALL:  // TODO
-            out << "\n\n**********ERROR-call-\n\n";
+            CL_ERROR("call instruction");
             break;
     case CL_INSN_SWITCH: // >=1, should be eliminated
-            out << "\n\n**********ERROR-switch-\n\n";
+            CL_ERROR("switch instruction");
             break;
     case CL_INSN_LABEL:  // TODO
             out << INDENT << i.data.insn_label.name << "\n";
             break;
     default:
-            out << "\n\n**********ERROR-\n\n";
+            CL_ERROR("unknown instruction");
             break;
     }
     INDENT_DOWN;
@@ -623,6 +627,12 @@ static std::string to_json(const Insn &i) {
             }
             // else CL_ERROR?
             break;
+    case CL_INSN_CLOBBER:
+            if(i.operands.size()==1) {
+                out << ": \n";
+                out << INDENT << to_json(i.operands[0]) << "\n";
+            }
+            break;
     case CL_INSN_ABORT: // 0    no operands
             break;
     case CL_INSN_UNOP:  // 2    op[0] <- f(op[1])
@@ -656,7 +666,7 @@ static std::string to_json(const Insn &i) {
             out << INDENT << "]\n";
             break;
     case CL_INSN_SWITCH: // >=1, should be eliminated by CL
-            out << "\n\n**********ERROR-switch-\n\n";
+            CL_ERROR("switch instruction");
             break;
     case CL_INSN_LABEL:  // 1   ?
             out << ": \n";
@@ -668,7 +678,7 @@ static std::string to_json(const Insn &i) {
             }
             break;
     default:
-            out << "\n\n**********ERROR\n\n";
+            CL_ERROR("unknown instruction");
             break;
     }
     INDENT_DOWN;
@@ -769,6 +779,7 @@ static std::string to_json(const Fnc &f) {
 void clEasyRun(const CodeStorage::Storage &stor, const char *)
 {
     try {
+
     std::stringstream out;
     out << std::boolalpha;
     out << "{\n";
@@ -815,7 +826,8 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
 
     out << "}\n";
     std::cout << out.str();
-    }catch(...) {
-        CL_ERROR("Exception in JSON dump.\n");
+
+    } catch(...) {
+        CL_ERROR("exception in JSON dump");
     }
 }
