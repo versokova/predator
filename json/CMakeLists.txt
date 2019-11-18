@@ -41,6 +41,10 @@ CL_BUILD_COMPILER_PLUGIN(json json_core ../cl_build)
 get_property(JSON_PLUG TARGET json PROPERTY LOCATION)
 message (STATUS "JSON_PLUG: ${JSON_PLUG}")
 
+#helping script
+configure_file(${PROJECT_SOURCE_DIR}/json_dumper.sh.in
+    ${PROJECT_BINARY_DIR}/json_dumper.sh        @ONLY)
+
 # make install
 install(TARGETS json DESTINATION lib)
 

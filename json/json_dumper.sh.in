@@ -1,0 +1,48 @@
+#!/bin/bash
+export SELF="$0"
+export CCACHE_DISABLE=1
+
+if [ `uname` = Darwin ]; then
+    ABSPATH='realpath'
+else
+    ABSPATH='readlink -f'
+fi
+
+usage() {
+    echo Usage: $0 SRC COMPILE_ARGS
+    exit 1
+}
+
+# include common code base
+topdir="`dirname "$(${ABSPATH} "$SELF")"`/.."
+
+export SINK="/dev/null"
+export COMPILE_OPTS="-S -O0 -I$topdir/include/predator-builtins -DPREDATOR"
+export JSON_PLUG='@JSON_PLUG@'
+export ENABLE_LLVM='@ENABLE_LLVM@'
+if [ -z $ENABLE_LLVM ]; then
+    export GCC_HOST='@GCC_HOST@'
+else
+    export OPT_HOST='@OPT_HOST@'
+    export CLANG_HOST='@CLANG_HOST@'
+fi
+
+# run the gcc
+run_gcc() {
+    "$GCC_HOST" $COMPILE_OPTS -o $SINK -fplugin="$JSON_PLUG" "$@" | ydump
+}
+
+# run the clang/LLVM
+run_llvm() {
+    "$CLANG_HOST" $COMPILE_OPTS -emit-llvm -g -o -         \
+        -Xclang -fsanitize-address-use-after-scope "$@"    \
+        | "$OPT_HOST" -o $SINK                             \
+        -lowerswitch                                       \
+        -load "$JSON_PLUG" -json | ydump
+}
+
+if [ -z $ENABLE_LLVM ]; then
+    run_gcc "$@"
+else
+    run_llvm "$@"
+fi
