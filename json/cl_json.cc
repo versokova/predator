@@ -23,6 +23,7 @@
 #include <cl/clutil.hh>
 #include <cl/storage.hh>
 #include <iostream>
+#include <cassert>
 
 // required by the gcc plug-in API
 extern "C" {
@@ -34,10 +35,10 @@ using namespace CodeStorage;
 //////////////////////////////////////////////////////////////////
 // conversion tables: enum -> C string
 // TODO: add quotation later (by std::quote)
-// TODO: add assert to check array index
 
 /// convert type enum value to string
 static inline const char * to_string(enum cl_type_e typ) {
+    assert((typ < 13));
     static const char * str[] = {
         /* CL_TYPE_VOID    */ "\"TypeVoid\"",
         /* CL_TYPE_UNKNOWN */ "\"TypeUnknown\"",
@@ -58,6 +59,7 @@ static inline const char * to_string(enum cl_type_e typ) {
 
 /// special variant for cst
 static inline const char * to_string_cst(enum cl_type_e typ) {
+    assert((typ < 13));
     static const char * str[] = {
         /* CL_TYPE_VOID    */ "\"CstVoid\"",
         /* CL_TYPE_UNKNOWN */ "\"CstUnknown\"",
@@ -78,6 +80,7 @@ static inline const char * to_string_cst(enum cl_type_e typ) {
 
 /// convert scope enum value to string
 static inline const char * to_string(enum cl_scope_e scope) {
+    assert((scope < 3));
     static const char * str[] = {
         /* CL_SCOPE_GLOBAL   */ "\"CL_SCOPE_GLOBAL\"",
         /* CL_SCOPE_STATIC   */ "\"CL_SCOPE_STATIC\"",
@@ -88,6 +91,7 @@ static inline const char * to_string(enum cl_scope_e scope) {
 
 /// convert operand enum value to string
 static inline const char * to_string(enum cl_operand_e op) {
+    assert((op < 3));
     static const char * str[] = {
         /* CL_OPERAND_VOID */ "\"OpVoid\"",
         /* CL_OPERAND_CST  */ "\"OpCst\"",
@@ -98,6 +102,7 @@ static inline const char * to_string(enum cl_operand_e op) {
 
 /// convert EVar enum value to string
 static inline const char * to_string(enum EVar v) {
+    assert((v < 4));
     static const char * str[] = {
         /* VAR_VOID    */ "\"VAR_VOID\"",
         /* VAR_GL      */ "\"VAR_GL\"",
@@ -109,6 +114,7 @@ static inline const char * to_string(enum EVar v) {
 
 /// convert instruction type enum value to string (CL_INSN_ prefix removed)
 static inline const char * to_string(enum cl_insn_e instruction) {
+    assert((instruction < 11));
     static const char * str[] = {
         /* CL_INSN_NOP     */ "\"InsnNOP\"",
         /* CL_INSN_JMP     */ "\"InsnJMP\"",
@@ -127,6 +133,7 @@ static inline const char * to_string(enum cl_insn_e instruction) {
 
 /// convert unary instruction subtype enum value to string (enum cl_unop_e)
 static inline const char * to_string_unop(int subcode) {
+    assert((subcode < 6));
     static const char * str[] = {
         /* CL_UNOP_ASSIGN    */ "\"CL_UNOP_ASSIGN\"",
         /* CL_UNOP_TRUTH_NOT */ "\"CL_UNOP_TRUTH_NOT\"",
@@ -140,6 +147,7 @@ static inline const char * to_string_unop(int subcode) {
 
 /// convert binary instruction subtype (enum cl_binop_e) value to string
 static inline const char * to_string_binop(int subcode) {
+    assert((subcode < 27));
     static const char * str[] = {
      /* CL_BINOP_EQ, */ "\"CL_BINOP_EQ\"",
      /* CL_BINOP_NE, */ "\"CL_BINOP_NE\"",
@@ -179,6 +187,7 @@ static inline const char * to_string_binop(int subcode) {
 
 /// convert enum cl_accessor_e value to string
 static inline const char * to_string(enum cl_accessor_e a) {
+    assert((a < 5));
     static const char * str[] = {
         /* CL_ACCESSOR_REF         */ "\"Ref\"",
         /* CL_ACCESSOR_DEREF       */ "\"Deref\"",
