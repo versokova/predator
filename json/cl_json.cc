@@ -453,68 +453,6 @@ static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) 
 
 static std::string to_json(const struct cl_operand &op);//forward
 
-#if 0
-/// dump cl_insn instruction
-static std::string to_json(const struct cl_insn &i) {
-    std::stringstream out;
-    out << std::boolalpha;
-    INDENT_UP;
-    out << INDENT << "{\n";
-    out << INDENT << "\"code\": ";
-    out << "<" << to_string(i.code) << ": \n";
-    INDENT_UP;
-    switch(i.code) {
-    case CL_INSN_JMP:
-            out << INDENT << i.data.insn_jmp.label << "\n";
-            break;
-    case CL_INSN_COND:
-            out << INDENT << to_json(*i.data.insn_cond.src) << ",\n";
-            out << INDENT << i.data.insn_cond.then_label << ",\n";
-            out << INDENT << i.data.insn_cond.else_label << "\n";
-            break;
-    case CL_INSN_RET:
-            out << INDENT << to_json(*i.data.insn_ret.src) << "\n";
-            break;
-    case CL_INSN_CLOBBER:
-            out << INDENT << to_json(*i.data.insn_ret.var) << "\n";
-            break;
-    case CL_INSN_ABORT: // TODO
-            CL_ERROR("abort instruction");
-            break;
-    case CL_INSN_UNOP:  //
-            out << INDENT << "(<" << to_string_unop(i.data.insn_unop.code) << ">,\n";
-            out << INDENT << to_json(*i.data.insn_unop.dst) << ",\n";
-            out << INDENT << to_json(*i.data.insn_unop.src) << "\n";
-            out << INDENT << ")\n";
-            break;
-    case CL_INSN_BINOP: //
-            out << INDENT << "(<" << to_string_binop(i.data.insn_binop.code) << ">,\n";
-            out << INDENT << to_json(*i.data.insn_binop.dst) << ",\n";
-            out << INDENT << to_json(*i.data.insn_binop.src1) << ",\n";
-            out << INDENT << to_json(*i.data.insn_binop.src2) << "\n";
-            out << INDENT << ")\n";
-            break;
-    case CL_INSN_CALL:  // TODO
-            CL_ERROR("call instruction");
-            break;
-    case CL_INSN_SWITCH: // >=1, should be eliminated
-            CL_ERROR("switch instruction");
-            break;
-    case CL_INSN_LABEL:  // TODO
-            out << INDENT << i.data.insn_label.name << "\n";
-            break;
-    default:
-            CL_ERROR("unknown instruction");
-            break;
-    }
-    INDENT_DOWN;
-    out << INDENT << ">,\n";
-    out << INDENT << "\"loc\": " << to_json(i.loc) << "\n";
-    out << INDENT << "}";
-    INDENT_DOWN;
-    return out.str();
-}
-#endif
 
 /// dump GCC accessor
 static std::string to_json(const struct cl_accessor &a) {
@@ -677,14 +615,20 @@ static std::string to_json(const Insn &i) {
     case CL_INSN_SWITCH: // >=1, should be eliminated by CL
             CL_ERROR("switch instruction");
             break;
-    case CL_INSN_LABEL:  // 1   ?
+    case CL_INSN_LABEL:  // 1
             out << ": \n";
-            if(i.operands.size()==1 && i.operands[0].code==CL_OPERAND_CST) {
-                // Label has name?
-                out << INDENT << to_json(i.operands[0]) << "\n";
-            } else {
-                out << INDENT << "\"no-name-label?\" \n";
-            }
+            if(i.operands.size()==1) {
+                out << INDENT << "\"";
+                if (i.operands[0].code==CL_OPERAND_VOID) {
+                    out << i.operands[0].data.cst.data.cst_string.value;
+                } else {
+                    assert((i.operands[0].code==CL_OPERAND_CST &&
+                            i.operands[0].data.cst.code==CL_TYPE_STRING));
+                    out << "<anon_label>";
+                }
+                out << "\"\n";
+            } else
+                CL_ERROR("wrong label");
             break;
     default:
             CL_ERROR("unknown instruction");
