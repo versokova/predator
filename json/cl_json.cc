@@ -696,7 +696,7 @@ static std::string to_json(const Fnc &f) {
 
     out << INDENT << "\"vars\": [ ";
     int nv=0;
-    for(int var_uid: f.vars) {
+    for(auto var_uid: f.vars) {
         if(nv++>0) out << ", ";
         out << var_uid;
     }
@@ -704,7 +704,7 @@ static std::string to_json(const Fnc &f) {
 
     out << INDENT << "\"args\": [ ";
     int na=0;
-    for(int a_uid: f.args) {
+    for(auto a_uid: f.args) {
         if(na++>0) out << ", ";
         out << a_uid;
     }
