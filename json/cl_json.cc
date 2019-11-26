@@ -416,7 +416,8 @@ static std::string quoted(const char *cstr) {
 /// dump C literal (constant) value
 static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) {
     enum cl_type_e code = (t)? t->code : v.code;
-    if (v.code == CL_TYPE_STRING) code = v.code; // because string is pointer
+    if (v.code == CL_TYPE_STRING || v.code == CL_TYPE_FNC)
+        code = v.code; // because it is basically pointer
     std::stringstream out;
     out << std::boolalpha;
     out << "{\n";
