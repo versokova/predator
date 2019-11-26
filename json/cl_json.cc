@@ -767,11 +767,10 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
     // dump array of functions
     out << "\"fncs\": [\n";
     unsigned nf=0;
-    // TODO: Is callGraph always created correctly?
-    for(const Fnc *pFnc : stor.callGraph.topOrder ) {
+    for(const Fnc *pFnc : stor.fncs ) {
         // for each function
         const Fnc &fnc = *pFnc;
-        if (!isDefined(fnc))    // TODO: defined functions only?
+        if (!isDefined(fnc))
             continue;
 
         if(nf>0) out << ",\n";
