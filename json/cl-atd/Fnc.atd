@@ -7,8 +7,7 @@ type cl_operand <ocaml from="Operand" t="t"> = abstract
 type t = {
   def : cl_operand;
   ~vars : int list; (* var.uid *)
-  ~args : int list (* var.uid of arguments *)
-   <ocaml repr="array">;
+  ~args : int list; (* var.uid of arguments *)
   ?cfg : block list option; (* None - extern fnc, Some [] - empty *)
   (* ?specs <ocaml mutable> : state option; *)
 }
