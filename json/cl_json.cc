@@ -415,10 +415,12 @@ static std::string quoted(const char *cstr) {
 
 /// dump C literal (constant) value
 static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) {
+    enum cl_type_e code = (t)? t->code : v.code;
+    if (v.code == CL_TYPE_STRING) code = v.code; // because string is pointer
     std::stringstream out;
     out << std::boolalpha;
     out << "{\n";
-    out << INDENT << "\"data\": <" << to_string_cst(v.code);
+    out << INDENT << "\"data\": <" << to_string_cst(code);
     switch(v.code) {
     case CL_TYPE_FNC:
         out << INDENT << ": { \"uid\": " << v.data.cst_fnc.uid << ",\n";
@@ -431,7 +433,9 @@ static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) 
     case CL_TYPE_INT:
         // dumped value depends on signedness os integer type
         if(t) {  // FIXME: Not set by CL in some initializers
-            if(t->is_unsigned)
+            if(t->code == CL_TYPE_BOOL) {
+                out << INDENT << ": " << ((v.data.cst_int.value)? "true":"false") << "\n";
+            } else if(t->is_unsigned)
                 out << INDENT << ": " << (v.data.cst_uint.value) << "\n";
             else
                 out << INDENT << ": " << (v.data.cst_int.value) << "\n";
