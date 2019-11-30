@@ -1,5 +1,7 @@
 type cl_loc <ocaml from="Loc" t="t"> = abstract
 
+type cl_uid <ocaml from="Loc" t="cl_uid"> = abstract
+
 type cl_scope_e <ocaml from="Loc" t="cl_scope_e"> = abstract
 
 type t = {
@@ -16,12 +18,12 @@ type t = {
 type cl_type_e = [
     TypeVoid
   | TypeUnknown
-  | TypePtr of int (* cl_type.uid *)
+  | TypePtr of cl_uid (* cl_type.uid *)
   | TypeStruct of cl_type_item list
      <ocaml repr="array">
   | TypeUnion of cl_type_item list
      <ocaml repr="array">
-  | TypeArray of (int * int) (* array_size * cl_type.uid f elm *)
+  | TypeArray of (int * cl_uid) (* array_size * cl_type.uid of elm *)
   | TypeFnc of cl_type_item list
      <ocaml repr="array">
   | TypeInt
@@ -33,7 +35,7 @@ type cl_type_e = [
 ] <ocaml repr="classic">
 
 type cl_type_item = {
-  typ : int; (* cl_type.uid of this nested type *)
+  typ : cl_uid; (* cl_type.uid of this nested type *)
   ?name : string option;
   ~offset : int;
 }    <ocaml field_prefix="item_">

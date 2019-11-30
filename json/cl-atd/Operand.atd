@@ -1,16 +1,18 @@
 type cl_loc <ocaml from="Loc" t="t"> = abstract
 
+type cl_uid <ocaml from="Loc" t="cl_uid"> = abstract
+
 type cl_scope_e <ocaml from="Loc" t="cl_scope_e"> = abstract
 
 type t = {
   scope : cl_scope_e;
-  ~typ : int; (* cl_type.uid *)
+  ~typ <ocaml default="0"> : cl_uid; (* cl_type.uid *)
   ~accessor : cl_accessor list;
   ~data <ocaml default="OpVoid"> : op_data_e;
 }
 
 type op_data_e = [
-    OpVar of int (* var.uid *)
+    OpVar of cl_uid (* var.uid *)
   | OpCst of cl_cst
   | OpVoid
 ] <ocaml repr="classic">
@@ -34,14 +36,14 @@ type cst_data_e = [
 ] <ocaml repr="classic">
 
 type cl_cst_fnc = {
-    uid : int; (* fnc.uid redundant! *)
+    uid : cl_uid; (* fnc.uid redundant! *)
     ?name : string option;
     ~is_extern <ocaml default="false"> : bool; 
     ?loc : cl_loc option
 } 
 
 type cl_accessor = {
-  typ : int; (* cl_type.uid *)
+  typ : cl_uid; (* cl_type.uid *)
   data : acc_data_e;
 }    <ocaml field_prefix="acc_">
 

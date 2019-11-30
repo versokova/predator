@@ -1,43 +1,46 @@
 type cl_loc <ocaml from="Loc" t="t"> = abstract
 
+type cl_uid <ocaml from="Loc" t="cl_uid"> = abstract
+
 type cl_operand <ocaml from="Operand" t="t"> = abstract
 
 (* type state <ocaml from="State" t="t"> = abstract *)
 
 type t = {
   def : cl_operand;
-  ~vars : int list; (* var.uid *)
-  ~args : int list; (* var.uid of arguments *)
+  ~vars : cl_uid list; (* var.uid *)
+  ~args : cl_uid list; (* var.uid of arguments *)
   ?cfg : block list option; (* None - extern fnc, Some [] - empty *)
   (* ?specs <ocaml mutable> : state option; *)
 }
 
 type block = {
-  uid : int;
+  uid : cl_uid;
   name : string;
   insns : insn list;
-  inbounds : int list; (* block.uid list *)
+  targets : cl_uid list; (* block.uid list *)
+  inbounds : cl_uid list; (* block.uid list *)
 }
 
 
 type insn = {
   code : cl_insn_e;
   ?loc : cl_loc option;
-  ?loop_closing_targets <ocaml mutable> : int list option;
+  ?loop_closing_targets <ocaml mutable> : cl_uid list option;
   (* ?specs <ocaml mutable> : state option; *)
 }
 
 type cl_insn_e = [
     InsnNOP
-  | InsnJMP of int (* target (block.uid) *)
-  | InsnCOND of (cl_operand * int * int) (* cond * target_then * target_else *)
+  | InsnJMP of cl_uid (* target (block.uid) *)
+  | InsnCOND of (cl_operand * cl_uid * cl_uid) (* cond * tg_then * tg_else *)
   | InsnRET of cl_operand (* value to return *)
   | InsnCLOBBER of cl_operand (* variable *)
   | InsnABORT
   | InsnUNOP of (cl_unop_e * cl_operand * cl_operand ) (* code * dst * src *)
   | InsnBINOP of (cl_binop_e * cl_operand * cl_operand * cl_operand ) (* code * dst * src1 * src2 *)
   | InsnCALL of cl_operand list (* dst, called, ?args+ *)
-  | InsnSWITCH of (cl_operand * int) list (* (value to switch, default target), (case, target)+ *)
+  | InsnSWITCH of (cl_operand * cl_uid) list (* (value to switch, default target), (case, target)+ *)
   | InsnLABEL of string (* not useful *)
 ] <ocaml repr="classic">
 
