@@ -1,9 +1,11 @@
 type t = {
-  types : (int * cl_type) list;
-  vars : (int * var) list;
-  fncs : (int * fnc) list;
+  types : (cl_uid * cl_type) list;
+  vars : (cl_uid * var) list;
+  fncs : (cl_uid * fnc) list;
   (* callgraph *)
 }
+
+type cl_uid <ocaml from="Loc" t="cl_uid"> = abstract
 
 type cl_type <ocaml from="Type" t="t"> = abstract
 

@@ -1,11 +1,13 @@
 type cl_loc <ocaml from="Loc" t="t"> = abstract
 
+type cl_uid <ocaml from="Loc" t="cl_uid"> = abstract
+
 type insn <ocaml from="Fnc" t="insn"> = abstract
 
 type t = {
   code : var_e;
   ?loc : cl_loc option;
-  typ : int; (* cl_type.uid *)
+  typ : cl_uid; (* cl_type.uid *)
   ?name : string option;
   ~initials : insn list; (* option? *)
   initialized : bool;
