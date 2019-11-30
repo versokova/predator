@@ -353,34 +353,6 @@ static std::string to_json(const Var &v) {
     return out.str();
 }
 
-#if 0
-static std::string to_json(const struct cl_insn &i);    // forward
-/// dump cl_var
-static std::string to_json(const struct cl_var &v) {
-    std::stringstream out;
-    out << std::boolalpha;
-    out << "( " << v.uid << ",\n";
-    INDENT_UP;
-    out << INDENT << "{\n";
-    if(v.name)
-        out << INDENT << "\"name\": \"" << v.name << "\",\n";
-    out << INDENT << "\"loc\": " << to_json(v.loc) << ",\n";
-    if(v.initial) {
-        struct cl_initializer *p = v.initial;
-        out << INDENT << "\"initial\": [\n";
-        while(p) {
-            out << INDENT << to_json(p->insn) << ",\n";
-            p=p->next;
-        }
-        out << INDENT << "],\n";
-    }
-    out << INDENT << "\"is_extern\": " << v.is_extern << "\n";
-    out << INDENT << "})";
-    INDENT_DOWN;
-    return out.str();
-}
-#endif
-
 /// quote string literal values (like std::quoted)
 static std::string quoted(const char *cstr) {
     // TODO: not UTF-8 compatible, needs testing
