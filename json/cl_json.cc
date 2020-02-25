@@ -24,6 +24,7 @@
 #include <cl/storage.hh>
 #include <iostream>
 #include <cassert>
+#include <unordered_map>
 
 // required by the gcc plug-in API
 extern "C" {
@@ -128,6 +129,7 @@ static inline const char * to_string(enum cl_insn_e instruction) {
         /* CL_INSN_SWITCH  */ "\"InsnSWITCH\"",
         /* CL_INSN_LABEL   */ "\"InsnLABEL\"",
     };
+    static_assert(CL_INSN_LABEL==10, "Instruction table changed");
     return str[instruction];
 }
 
@@ -242,6 +244,21 @@ static int indent_json=0;
 #define INDENT          ""
 #endif
 
+/// map cl_uid_t to int (reason: Z3 does not handle long)
+static int conv_uid(const cl_uid_t uid) {
+    static std::unordered_map<cl_uid_t,int> m;
+    static int new_uid = 1;     // start value
+
+    auto it = m.find(uid);
+    if( it != m.end() ) {       // mappig already exists
+        return it->second;      // return int
+    }
+    else {                      // create new mapping
+        m.insert(std::make_pair(uid, new_uid)); // m[uid]=new_uid;
+        return new_uid++;       // advance int value
+    }
+}
+
 /// dump CodeStorage type
 static std::string to_json(const struct cl_type *pTyp) {
     std::stringstream out;
@@ -321,7 +338,7 @@ static std::string to_json(const Insn &i); // forward
 static std::string to_json(const Var &v) {
     std::stringstream out;
     out << std::boolalpha;
-    out << "( " << v.uid << ",\n";
+    out << "( " << conv_uid(v.uid) << ",\n";
     INDENT_UP;
     out << INDENT << "{\n"
         << INDENT << "\"code\": " << to_string(v.code) << ",\n"
@@ -467,7 +484,7 @@ static std::string to_json(const struct cl_operand &op) {
     INDENT_UP;
     out << INDENT << "\"data\": <" << to_string(op.code);
     if(op.code==CL_OPERAND_VAR)
-        out << ": " << op.data.var->uid;
+        out << ": " << conv_uid(op.data.var->uid);
     if(op.code==CL_OPERAND_CST)
         out << ": " << to_json_cst(op.data.cst,op.type);
     out << " >,\n";
@@ -675,7 +692,7 @@ static std::string to_json(const Fnc &f) {
     int nv=0;
     for(auto var_uid: f.vars) {
         if(nv++>0) out << ", ";
-        out << var_uid;
+        out << conv_uid(var_uid);
     }
     out << " ],\n";
 
@@ -683,7 +700,7 @@ static std::string to_json(const Fnc &f) {
     int na=0;
     for(auto a_uid: f.args) {
         if(na++>0) out << ", ";
-        out << a_uid;
+        out << conv_uid(a_uid);
     }
     out << " ],\n";
 
