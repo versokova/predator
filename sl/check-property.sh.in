@@ -112,7 +112,14 @@ OVERAPPROX=no
 # write trace to stderr by default
 TRACE="/dev/fd/2"
 
-ARGS=$(getopt -o p:t:x:d:v -l "propertyfile:,trace:,xmltrace:,depth:,verbose" -n "$SELF" -- "$@")
+if [ `uname` = Darwin ]; then
+  ABSPATH='realpath'
+  # mac os doesn't support long option names
+  ARGS=$(getopt p:t:x:d:v $*)
+else
+  ABSPATH='readlink -f'
+  ARGS=$(getopt -o p:t:x:d:v -l "propertyfile:,trace:,xmltrace:,depth:,verbose" -n "$SELF" -- "$@")
+fi
 if test $? -ne 0; then
   usage; exit 1;
 fi
@@ -166,17 +173,26 @@ fi; if [ -z "$TASK" ]; then
 fi
 
 # include common code base
-topdir="`dirname "$(readlink -f "$SELF")"`/.."
-#source "$topdir/build-aux/xgcclib.sh" # defines find_*() and die() functions (NOT needed for sv-comp)
+topdir="`dirname "$(${ABSPATH} "$SELF")"`/.."
+source "$topdir/build-aux/cclib.sh" # defines find_*() and die() functions (NOT needed for sv-comp)
 
-# basic setup
-#export GCC_PLUG='@GCC_PLUG@'
-export GCC_PLUG="$topdir/sl_build/libsl.so"
-export GCC_HOST='@GCC_HOST@'
+# basic setup & initial checks
+export SL_PLUG='@SL_PLUG@'
+export ENABLE_LLVM='@ENABLE_LLVM@'
+if [ -z $ENABLE_LLVM ]; then
+    export GCC_HOST='@GCC_HOST@'
+    find_gcc_host
+else
+    export PASSES_LIB='@PASSES_LIB@'
+    export OPT_HOST='@OPT_HOST@'
+    export CLANG_HOST='@CLANG_HOST@'
+    find_clang_host
+    find_opt_host
+    find_plug PASSES_LIB passes Passes
+fi
 
 ## initial checks (NOT needed for sv-comp)
-#find_gcc_host
-#find_gcc_plug sl Predator
+find_plug SL_PLUG sl Predator
 
 match() {
     line="$1"
@@ -324,7 +340,7 @@ report_safe() {
     exit 0
 }
 
-parse_gcc_output() {
+parse_output() {
     ERROR_DETECTED=no
     ENDED_GRACEFULLY=no
 
@@ -443,10 +459,22 @@ if test ! x = "x$XMLTRACE"; then
     ARGS="$ARGS,xml_trace:$XMLTRACE"
 fi
 
-"$GCC_HOST"                                             \
-    -fplugin="${GCC_PLUG}"                              \
-    -fplugin-arg-libsl-args="$ARGS"                     \
-    -o /dev/null -O0 -S -xc "$SRC_FILE" $CFLAGS 2>&1    \
-    | tee "$TRACE"                                      \
-    | parse_gcc_output
+if [ -z $ENABLE_LLVM ]; then
+    "$GCC_HOST"                                         \
+        -fplugin="${SL_PLUG}"                           \
+        -fplugin-arg-libsl-args="$ARGS"                 \
+        -o /dev/null -O0 -S -xc "$SRC_FILE" $CFLAGS 2>&1 \
+        | tee "$TRACE"                                  \
+        | parse_output
+else
+    "$CLANG_HOST" -S -emit-llvm -O0 -g -o -             \
+        -Xclang -fsanitize-address-use-after-scope      \
+        "$SRC_FILE" $CFLAGS                             \
+        | "$OPT_HOST" -lowerswitch                      \
+        -load "$PASSES_LIB" -global-vars -nestedgep     \
+        -load "$SL_PLUG" -sl -args="$ARGS"              \
+        -o /dev/null 2>&1                               \
+        | tee "$TRACE"                                  \
+        | parse_output
+fi
 
