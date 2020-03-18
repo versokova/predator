@@ -113,10 +113,12 @@ OVERAPPROX=no
 TRACE="/dev/fd/2"
 
 if [ `uname` = Darwin ]; then
+  SHA1SUM='shasum'
   ABSPATH='realpath'
   # mac os doesn't support long option names
   ARGS=$(getopt p:t:x:d:v $*)
 else
+  SHA1SUM='sha1sum'
   ABSPATH='readlink -f'
   ARGS=$(getopt -o p:t:x:d:v -l "propertyfile:,trace:,xmltrace:,depth:,verbose" -n "$SELF" -- "$@")
 fi
@@ -235,7 +237,7 @@ report_unsafe() {
     fi
 
     # change witness XML
-    HASH=`(sha1sum "$SRC_FILE" | sed 's/ .*//')`
+    HASH=`(${SHA1SUM} "$SRC_FILE" | sed 's/ .*//')`
 
     if test -z "$HASH"; then
       printf "%s: error: failed to generate hash for: %s\n" "$SELF" \
@@ -247,9 +249,9 @@ report_unsafe() {
         "$PRP_FILE" >&2
     fi
 
-    sed -i s/__SRCFILEHASH__/"${HASH}"/ "$XMLTRACE"
-    sed -i s/__SPECIFICATION__/"${SPEC}"/ "$XMLTRACE"
-    sed -i s/__ARCHITECTURE__/"${ARCH}bit"/ "$XMLTRACE"
+    sed -i '' s/__SRCFILEHASH__/"${HASH}"/ "$XMLTRACE"
+    sed -i '' s/__SPECIFICATION__/"${SPEC}"/ "$XMLTRACE"
+    sed -i '' s/__ARCHITECTURE__/"${ARCH}bit"/ "$XMLTRACE"
 
     exit 0
 }
@@ -260,7 +262,7 @@ report_safe() {
     report_result "TRUE" "" "$2"
     # generate correctness witness with all properties
     SPEC=`cat "$PRP_FILE"`
-    HASH=`(sha1sum "$SRC_FILE" | sed 's/ .*//')`
+    HASH=`(${SHA1SUM} "$SRC_FILE" | sed 's/ .*//')`
 
     if test -z "$HASH"; then
       printf "%s: error: failed to generate hash for: %s\n" "$SELF" \
