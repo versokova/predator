@@ -613,11 +613,11 @@ static std::string to_json(const Insn &i) {
             out << ": \n";
             if(i.operands.size()==1) {
                 out << INDENT << "\"";
-                if (i.operands[0].code==CL_OPERAND_VOID) {
+                if ((i.operands[0].code==CL_OPERAND_CST) &&
+                    (i.operands[0].data.cst.code==CL_TYPE_STRING)) {
                     out << i.operands[0].data.cst.data.cst_string.value;
                 } else {
-                    assert((i.operands[0].code==CL_OPERAND_CST &&
-                            i.operands[0].data.cst.code==CL_TYPE_STRING));
+                    assert(i.operands[0].code==CL_OPERAND_VOID);
                     out << "<anon_label>";
                 }
                 out << "\"\n";
