@@ -470,7 +470,7 @@ if [ -z $ENABLE_LLVM ]; then
         -fplugin="${SL_PLUG}"                           \
         -fplugin-arg-libsl-args="$ARGS"                 \
         -o /dev/null -O0 -S -xc "$SRC_FILE" $CFLAGS 2>&1 \
-        | tee "$TRACE"                                  \
+        | tee -a "$TRACE"                                  \
         | parse_output
 else
     "$CLANG_HOST" -S -emit-llvm -O0 -g -o -             \
@@ -480,7 +480,7 @@ else
         -load "$PASSES_LIB" -global-vars -nestedgep     \
         -load "$SL_PLUG" -sl -args="$ARGS"              \
         -o /dev/null 2>&1                               \
-        | tee "$TRACE"                                  \
+        | tee -a "$TRACE"                                  \
         | parse_output
 fi
 
