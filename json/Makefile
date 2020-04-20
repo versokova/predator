@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with predator.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE           ?= cmake
-CTEST           ?= ctest
+NUM_CPU         ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+CMAKE           ?= cmake -Wno-dev
+CTEST           ?= ctest -j$(NUM_CPU) --progress
 
 .PHONY: all check clean distclean distcheck
 
