@@ -423,7 +423,10 @@ static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) 
     case CL_TYPE_INT:
         // dumped value depends on signedness os integer type
         if(t) {  // FIXME: Not set by CL in some initializers
-            if(t->code == CL_TYPE_BOOL) {
+            if(t->size > 4) { // without quotes is only max int32
+                out << INDENT << ": \"0x" << std::hex
+                    << (v.data.cst_int.value) << "\"\n";
+            } else if(t->code == CL_TYPE_BOOL) {
                 out << INDENT << ": " << ((v.data.cst_int.value)? "true":"false") << "\n";
             } else if(t->is_unsigned)
                 out << INDENT << ": " << (v.data.cst_uint.value) << "\n";
