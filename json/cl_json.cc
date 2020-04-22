@@ -740,7 +740,7 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
         nt++;
     }
     out << "\n],\n";
-    //std::cout << "=Total: "<< nt << " types\n";
+    //std::cerr << "=Total: "<< nt << " types\n";
 
     // dump array of variables
     out << "\"vars\": [\n";
@@ -751,7 +751,7 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
         nv++;
     }
     out << "\n],\n";
-    //std::cout << "=Total: "<< nv << " variables\n";
+    //std::cerr << "=Total: "<< nv << " variables\n";
 
     // dump array of functions
     out << "\"fncs\": [\n";
@@ -768,7 +768,7 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
 
     }
     out << "\n]\n";
-    //std::cout << "=Total: "<< nf << " functions\n";
+    //std::cerr << "=Total: "<< nf << " functions\n";
 
     out << "}\n";
     std::cout << out.str();
