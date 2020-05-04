@@ -1314,6 +1314,8 @@ bool CLPass::handleOperand(Value *v, struct cl_operand *clo) {
 #else
                 delete vi;
 #endif
+                // do not allow re-use of vi as it's no longer valid
+                VarTable.erase(vi);
                 return retHO;
             }
 #ifdef LLVM_HOST_6_OR_NEWER
@@ -1321,6 +1323,7 @@ bool CLPass::handleOperand(Value *v, struct cl_operand *clo) {
 #else
             delete vi;
 #endif
+            VarTable.erase(vi);
 
         } else {                          // just constant
             handleBasicConstant(v, clo);
