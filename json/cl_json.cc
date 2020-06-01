@@ -661,10 +661,10 @@ static std::string to_json(const Insn &i) {
 static std::string to_json(const Block &bb) {
     std::stringstream out;
     out << std::boolalpha;
+    const char *label = bb.name().c_str();      // L###
+    out << "( " << std::strtoul(label+1,NULL,10) << ",\n"; // uid bb - FIXME fragile
     INDENT_UP;
     out << INDENT << "{\n";
-    const char *label = bb.name().c_str();      // L###
-    out << INDENT << "\"uid\": " << std::strtoul(label+1,NULL,10) << ",\n"; // FIXME fragile
     out << INDENT << "\"name\": \"" << bb.name() << "\",\n";
     out << INDENT << "\"insns\": [\n";
     int ni=0;
@@ -677,7 +677,7 @@ static std::string to_json(const Block &bb) {
     //TODO: can be empty:
     out << INDENT << "\"targets\": " << to_json(bb.targets()) << ",\n";
     out << INDENT << "\"inbounds\": " << to_json(bb.inbound()) << "\n";
-    out << INDENT << "}";
+    out << INDENT << "})";
     INDENT_DOWN;
     return out.str();
 }
