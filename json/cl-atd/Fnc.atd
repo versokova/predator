@@ -10,12 +10,12 @@ type t = {
   def : cl_operand;
   ~vars : cl_uid list; (* var.uid *)
   ~args : cl_uid list; (* var.uid of arguments *)
-  ?cfg : block list option; (* None - extern fnc, Some [] - empty *)
+  cfg : (cl_uid * block) list; (* [] - extern fnc/empty *)
   (* ?specs <ocaml mutable> : state option; *)
 }
 
 type block = {
-  uid : cl_uid;
+  (* uid : cl_uid; *)
   name : string;
   insns : insn list;
   targets : cl_uid list; (* block.uid list *)
