@@ -1,5 +1,5 @@
-module AGU = Ag_util (* older lib <2.0 *)
-(* module AGU = Atdgen_runtime.Util  *)
+module AGU = Atdgen_runtime.Util
+(* Ag_util for older lib <2.0 *)
 
 (*
 libppx-visitors-ocaml-dev
