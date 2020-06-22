@@ -25,6 +25,7 @@
 #include <iostream>
 #include <cassert>
 #include <unordered_map>
+#include <vector>
 
 // required by the gcc plug-in API
 extern "C" {
@@ -749,16 +750,31 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
     out << "\n],\n";
     //std::cerr << "=Total: "<< nt << " types\n";
 
+    std::vector<cl_uid_t> globalVars;
+
     // dump array of variables
     out << "\"vars\": [\n";
     unsigned nv=0;
     for(const Var &v : stor.vars ) {
+        if (VAR_GL == v.code)
+            globalVars.push_back(v.uid);
         if(nv>0) out << ",\n";
         out << to_json(v);
         nv++;
     }
     out << "\n],\n";
     //std::cerr << "=Total: "<< nv << " variables\n";
+
+    // list of uid of global variables
+    if(globalVars.size()>0) {
+        out << "\"global_vars\": [ ";
+        int nlt=0;
+        for(cl_uid_t uid: globalVars) {
+            if(nlt++>0) out << ", ";
+            out << conv_uid(uid);
+        }
+        out << " ],\n";
+    }
 
     // dump array of functions
     out << "\"fncs\": [\n";
