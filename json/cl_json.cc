@@ -634,18 +634,22 @@ static std::string to_json(const Insn &i) {
     INDENT_DOWN;
     out << INDENT << ">,\n";
 
+#if 0
     // target basic blocs of terminal jump instructions
+    // REDUNTAND INFORMATION
     if(i.targets.size()>0)
         out << INDENT << "\"targets\": " << to_json(i.targets) << ",\n";
+#endif
 #if 1
     // jump to which of previous "targets" is closing a loop
+    // idx of targets changed directly to BB
     // TODO: mandatory?
     if(i.loopClosingTargets.size()>0) {
         out << INDENT << "\"loop_closing_targets\": [ ";
         int nlt=0;
         for(unsigned idx: i.loopClosingTargets) {
             if(nlt++>0) out << ", ";
-            out << idx;
+            out << to_json(i.targets[idx]);
         }
         out << " ],\n";
     }
