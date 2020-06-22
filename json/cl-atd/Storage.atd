@@ -1,6 +1,7 @@
 type t = {
   types : (cl_uid * cl_type) list;
   vars : (cl_uid * var) list;
+  ~global_vars : cl_uid list; (* global / static vars *)
   fncs : (cl_uid * fnc) list;
   (* callgraph *)
 }
