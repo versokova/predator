@@ -44,6 +44,8 @@ message (STATUS "JSON_PLUG: ${JSON_PLUG}")
 #helping script
 configure_file(${PROJECT_SOURCE_DIR}/json_dumper.sh.in
     ${PROJECT_BINARY_DIR}/json_dumper.sh        @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/call_graph.sh.in
+    ${PROJECT_BINARY_DIR}/call_graph.sh         @ONLY)
 
 # make install
 install(TARGETS json DESTINATION lib)
@@ -77,7 +79,7 @@ set(tests
     0230 0231 0232 0233 0234 0235 0236 0237 0238 0239
     0240 0241 0242 0243 0244 0245 0246 0247 0248 0249
     0250 0251 0252 0253 0254 0255 0256 0257 0257 0259
-    0260 0261
+    0260 0261 0262 0263 0264 0265 0266
     0300 0301 0302                          0308 0309
     0310 0311 0312 0313 0314 0315 0316 0317 0318 0319
     0400 0401 0402 0403 0404 0405 0406 0407 0408 0409

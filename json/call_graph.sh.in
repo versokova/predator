@@ -13,21 +13,11 @@ usage() {
     exit 1
 }
 
-seek_input_file() {
-    for i in "$@"; do
-        test -e "$i" && return 0
-    done
-
-    return 1
-}
-
-seek_input_file "$@" || usage
-
 # include common code base
 topdir="`dirname "$(${ABSPATH} "$SELF")"`/.."
 
 export SINK="/dev/null"
-export COMPILE_OPTS="-S -O0 -I$topdir/include/predator-builtins -DPREDATOR"
+export COMPILE_OPTS="-S -c -O0 -I$topdir/include/predator-builtins -DPREDATOR"
 export JSON_PLUG='@JSON_PLUG@'
 export ENABLE_LLVM='@ENABLE_LLVM@'
 if [ -z $ENABLE_LLVM ]; then
@@ -37,9 +27,22 @@ else
     export CLANG_HOST='@CLANG_HOST@'
 fi
 
+seek_input_file() {
+    for i in "$@"; do
+        test -e "$i" && SRC="$(basename $i)" && return 0
+    done
+
+    return 1
+}
+
+seek_input_file "$@" || usage
+
+echo $SRC
+
 # run the gcc
 run_gcc() {
-    "$GCC_HOST" $COMPILE_OPTS -o $SINK -fplugin="$JSON_PLUG" "$@" | ydump
+    "$GCC_HOST" $COMPILE_OPTS -o $SINK -fplugin="$JSON_PLUG" "$@" \
+        -fplugin-arg-libjson-gen-dot="$SRC-#cg.dot" -fplugin-arg-libjson-dry-run
 }
 
 # run the clang/LLVM
@@ -48,7 +51,7 @@ run_llvm() {
         -Xclang -fsanitize-address-use-after-scope "$@"    \
         | "$OPT_HOST" -o $SINK                             \
         -lowerswitch                                       \
-        -load "$JSON_PLUG" -json | ydump
+        -load "$JSON_PLUG" -json -gen-dot="$SRC-#cg.dot" -dry-run
 }
 
 if [ -z $ENABLE_LLVM ]; then
