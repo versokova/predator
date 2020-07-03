@@ -13,6 +13,11 @@ usage() {
     exit 1
 }
 
+die() {
+    printf "%s: %s\n" "$SELF" "$*" >&2
+    exit 1
+}
+
 # include common code base
 topdir="`dirname "$(${ABSPATH} "$SELF")"`/.."
 
@@ -37,12 +42,10 @@ seek_input_file() {
 
 seek_input_file "$@" || usage
 
-echo $SRC
-
 # run the gcc
 run_gcc() {
     "$GCC_HOST" $COMPILE_OPTS -o $SINK -fplugin="$JSON_PLUG" "$@" \
-        -fplugin-arg-libjson-gen-dot="$SRC-#cg.dot" -fplugin-arg-libjson-dry-run
+        -fplugin-arg-libjson-gen-dot="$SRC.dot" -fplugin-arg-libjson-dry-run
 }
 
 # run the clang/LLVM
@@ -51,11 +54,42 @@ run_llvm() {
         -Xclang -fsanitize-address-use-after-scope "$@"    \
         | "$OPT_HOST" -o $SINK                             \
         -lowerswitch                                       \
-        -load "$JSON_PLUG" -json -gen-dot="$SRC-#cg.dot" -dry-run
+        -load "$JSON_PLUG" -json -gen-dot="$SRC.dot" -dry-run
 }
 
 if [ -z $ENABLE_LLVM ]; then
     run_gcc "$@"
 else
     run_llvm "$@"
+fi
+
+which dot > /dev/null || die "dot is not installed"
+
+# convert dots to svgs
+for i in $SRC*.dot; do
+    fn=`basename $i`
+    j="${fn%.*}"
+    dot -Tsvg < $i > $j.svg
+    rm $i
+done
+
+URL="$SRC.svg"
+
+# open svg
+if [ `uname` = Darwin ]; then
+    if open -Ra "Firefox" ; then
+        open -a Firefox "$URL"
+    elif open -Ra "Safari" ; then
+        open -a Safari "$URL"
+    else
+        die "Can't find any SVG browser. The file to open: $URL"
+    fi
+else
+    if [ -x "$BROWSER" ]; then
+        path="$BROWSER"
+    else
+        path=$(which xdg-open || which gnome-open)
+    fi
+    [[ -z "$path" ]] && die "Can't find any SVG browser. The file to open: $URL"
+    exec "$path" "$URL" &
 fi
