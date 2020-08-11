@@ -26,7 +26,7 @@ type block = {
 type insn = {
   code : cl_insn_e;
   ?loc : cl_loc option;
-  ?loop_closing_targets <ocaml mutable> : cl_uid list option;
+  ~loop_closing_targets : cl_uid list;
   (* ?specs <ocaml mutable> : state option; *)
 }
 
