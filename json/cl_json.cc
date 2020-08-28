@@ -272,22 +272,22 @@ static std::string to_json(const struct cl_type *pTyp) {
     switch(pTyp->code) {
     case CL_TYPE_PTR:
             // assert(item_cnt==1);
-            out << "< " << to_string(pTyp->code) << ": ";
+            out << "<" << to_string(pTyp->code) << ": ";
             out << pTyp->items[0].type->uid;
-            out << " >,\n";
+            out << ">,\n";
             break;
     case CL_TYPE_ARRAY:
             // assert(item_cnt==1);
-            out << "< " << to_string(pTyp->code) << ": (";
+            out << "<" << to_string(pTyp->code) << ": (";
             out << pTyp->array_size;
             out << ", ";
             out << pTyp->items[0].type->uid;
-            out << " ) >,\n";
+            out << " )>,\n";
             break;
     case CL_TYPE_STRUCT:
     case CL_TYPE_UNION:
             //TODO: can be empty
-            out << "< " << to_string(pTyp->code) << ": [ ";
+            out << "<" << to_string(pTyp->code) << ": [ ";
             for(int i=0; i < pTyp->item_cnt; ++i) {
                 if(i>0) out << ", ";    // JSON does not allow trailing comma
                 out << "{ ";
@@ -297,18 +297,18 @@ static std::string to_json(const struct cl_type *pTyp) {
                 out << "\"typ\": " << pTyp->items[i].type->uid;
                 out << " }";
             }
-            out << " ] >,\n";
+            out << " ]>,\n";
             break;
     case CL_TYPE_FNC:
             // TODO: name, offset?
-            out << "< " << to_string(pTyp->code) << ": [ ";
+            out << "<" << to_string(pTyp->code) << ": [ ";
             for(int i=0; i < pTyp->item_cnt; ++i) {
                 if(i>0) out << ", ";    // JSON does not allow trailing comma
                 out << "{ ";
                 out << "\"typ\": " << pTyp->items[i].type->uid;
                 out << " }";
             }
-            out << " ] >,\n";
+            out << " ]>,\n";
             break;
     default:
             out << to_string(pTyp->code) << ",\n";
@@ -426,26 +426,26 @@ static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) 
         if(t) {  // FIXME: Not set by CL in some initializers
             if(t->size > 4) { // without quotes is only max int32
                 out << INDENT << ": \"0x" << std::hex
-                    << (v.data.cst_int.value) << "\"\n";
+                    << (v.data.cst_int.value) << "\"";
             } else if(t->code == CL_TYPE_BOOL) {
                 out << INDENT << ": " << ((v.data.cst_int.value)? "true":"false") << "\n";
             } else if(t->is_unsigned)
-                out << INDENT << ": " << (v.data.cst_uint.value) << "\n";
+                out << INDENT << ": " << (v.data.cst_uint.value);
             else
-                out << INDENT << ": " << (v.data.cst_int.value) << "\n";
+                out << INDENT << ": " << (v.data.cst_int.value);
         } else { // DEFAULT: signed
-            out << INDENT << ": " << (v.data.cst_int.value) << "\n";
+            out << INDENT << ": " << (v.data.cst_int.value);
         }
         break;
     case CL_TYPE_STRING:
-        out << INDENT << ": " << ::quoted(v.data.cst_string.value) << "\n";
+        out << INDENT << ": " << ::quoted(v.data.cst_string.value);
         break;
     case CL_TYPE_REAL:
-        out << INDENT << ": " << (v.data.cst_real.value) << "\n";
+        out << INDENT << ": " << (v.data.cst_real.value);
         break;
     default: /* empty */ break;
     } // switch
-    out << INDENT << " > }\n";
+    out << INDENT << "> }\n";
     return out.str();
 }
 
@@ -491,7 +491,7 @@ static std::string to_json(const struct cl_operand &op) {
         out << ": " << conv_uid(op.data.var->uid);
     if(op.code==CL_OPERAND_CST)
         out << ": " << to_json_cst(op.data.cst,op.type);
-    out << " >,\n";
+    out << ">,\n";
 
     if(op.type)
         out << INDENT << "\"typ\": " << op.type->uid << ",\n";
