@@ -24,6 +24,7 @@
 #include <cl/storage.hh>
 #include <iostream>
 #include <cassert>
+#include <cmath>
 #include <unordered_map>
 #include <vector>
 
@@ -440,9 +441,19 @@ static std::string to_json_cst(const struct cl_cst &v, const struct cl_type *t) 
     case CL_TYPE_STRING:
         out << INDENT << ": " << ::quoted(v.data.cst_string.value);
         break;
-    case CL_TYPE_REAL:
-        out << INDENT << ": " << (v.data.cst_real.value);
+    case CL_TYPE_REAL: {
+        out << INDENT << ": ";
+        double num = v.data.cst_real.value;
+        if (std::isnan(num))
+            out << "NaN";
+        else if (num == INFINITY)
+            out << "Infinity";
+        else if (num == -INFINITY)
+            out << "-Infinity";
+        else
+            out << num;
         break;
+    }
     default: /* empty */ break;
     } // switch
     out << INDENT << "> }\n";
