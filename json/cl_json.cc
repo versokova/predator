@@ -151,7 +151,7 @@ static inline const char * to_string_unop(int subcode) {
 
 /// convert binary instruction subtype (enum cl_binop_e) value to string
 static inline const char * to_string_binop(int subcode) {
-    assert((subcode < 27));
+    assert((subcode < 28));
     static const char * str[] = {
      /* CL_BINOP_EQ, */ "\"CL_BINOP_EQ\"",
      /* CL_BINOP_NE, */ "\"CL_BINOP_NE\"",
@@ -175,6 +175,7 @@ static inline const char * to_string_binop(int subcode) {
      /* CL_BINOP_MAX, */ "\"CL_BINOP_MAX\"",
 
      /* CL_BINOP_POINTER_PLUS, */ "\"CL_BINOP_POINTER_PLUS\"",
+     /* CL_BINOP_POINTER_MINUS, */ "\"CL_BINOP_POINTER_MINUS\"",
 
      /* CL_BINOP_BIT_AND, */ "\"CL_BINOP_BIT_AND\"",
      /* CL_BINOP_BIT_IOR, */ "\"CL_BINOP_BIT_IOR\"",
