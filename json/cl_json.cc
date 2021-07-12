@@ -22,6 +22,7 @@
 #include <cl/cl_msg.hh>
 #include <cl/clutil.hh>
 #include <cl/storage.hh>
+#include <algorithm>
 #include <iostream>
 #include <cassert>
 #include <cmath>
@@ -740,6 +741,10 @@ static std::string to_json(const Fnc &f) {
     return out.str();
 }
 
+// compare function by uid
+bool cmp_by_uid(const Fnc *a, const Fnc *b) {
+    return uidOf(*a) < uidOf(*b);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // see easy.hh for details
@@ -791,7 +796,16 @@ void clEasyRun(const CodeStorage::Storage &stor, const char *)
     // dump array of functions
     out << "\"fncs\": [\n";
     unsigned nf=0;
+
+    // "callgraph" depends on uid given by compiler
+    // FIXME: for recursion
+    TFncList uidOrder;
     for(const Fnc *pFnc : stor.fncs ) {
+        uidOrder.push_back(pFnc);
+    }
+    std::sort(uidOrder.begin(), uidOrder.end(), cmp_by_uid);
+
+    for(const Fnc *pFnc : uidOrder ) {
         // for each function
         const Fnc &fnc = *pFnc;
         if (!isDefined(fnc))
