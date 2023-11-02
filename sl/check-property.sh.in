@@ -107,7 +107,7 @@ PRP_FILE=
 DEPTH=""
 XMLTRACE=""
 SRC_FILE=
-ARCH=
+ARCH="32"
 OVERAPPROX=no
 
 # write trace to stderr by default
