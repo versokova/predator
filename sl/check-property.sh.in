@@ -116,11 +116,13 @@ TRACE="/dev/fd/2"
 if [ `uname` = Darwin ]; then
   SHA1SUM='shasum'
   ABSPATH='realpath'
+  SED="sed -i ''"
   # mac os doesn't support long option names
   ARGS=$(getopt p:t:x:d:v $*)
 else
   SHA1SUM='sha1sum'
   ABSPATH='readlink -f'
+  SED='sed -i'
   ARGS=$(getopt -o p:t:x:d:v -l "propertyfile:,trace:,xmltrace:,depth:,verbose" -n "$SELF" -- "$@")
 fi
 if test $? -ne 0; then
@@ -244,9 +246,9 @@ report_unsafe() {
     fi
 
     if test -n "$XMLTRACE"; then
-      sed -i '' s/__SRCFILEHASH__/"${HASH}"/ "$XMLTRACE"
-      sed -i '' s/__SPECIFICATION__/"${SPEC}"/ "$XMLTRACE"
-      sed -i '' s/__ARCHITECTURE__/"${ARCH}bit"/ "$XMLTRACE"
+      ${SED} s/__SRCFILEHASH__/"${HASH}"/ "$XMLTRACE"
+      ${SED} s/__SPECIFICATION__/"${SPEC}"/ "$XMLTRACE"
+      ${SED} s/__ARCHITECTURE__/"${ARCH}bit"/ "$XMLTRACE"
     fi
 
     exit 0
