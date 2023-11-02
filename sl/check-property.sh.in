@@ -6,6 +6,7 @@ export CCACHE_DISABLE=1
 export MSG_INFLOOP=': warning: end of function .*\(\) has not been reached'
 export MSG_LABEL_FOUND=': error: error label "ERROR" has been reached'
 export MSG_VERIFIER_ERROR_FOUND=': (error|warning): __VERIFIER_error\(\) reached'
+export MSG_ASSERTION_FOUND=': (error|warning): assertion failed: .*'
 export MSG_OUR_WARNINGS=': warning: .*\[-fplugin=libsl.so\]$'
 export MSG_TIME_ELAPSED=': note: clEasyRun\(\) took '
 export MSG_INTERVAL_REDUCE=': warning: reduce .*er bound of half-open interval'
@@ -149,6 +150,8 @@ test -r "$PRP_FILE" || usage
 TASK=""
 if grep "call(__VERIFIER_error()" "$PRP_FILE" >/dev/null; then
     TASK="$TASK VERIFIER_error"
+fi; if grep "call(reach_error()" "$PRP_FILE" >/dev/null; then
+    TASK="$TASK assert"
 fi; if grep "valid-memcleanup" "$PRP_FILE" >/dev/null; then
     TASK="$TASK memcleanup"
 fi; if grep "valid-memtrack" "$PRP_FILE" >/dev/null; then
@@ -358,6 +361,12 @@ parse_gcc_output() {
               report_unsafe "" "$line"
             fi
 
+        elif match "$line" "$MSG_ASSERTION_FOUND"; then
+            # an __assert_rtn() or __assert_fail has been reached
+            if match "$TASK" "assert"; then
+              report_unsafe "" "$line"
+            fi
+
         #elif match "$line" "$MSG_LABEL_FOUND"; then
         #    # an ERROR label has been reached
         #    if match "$TASK" "VERIFIER_error"; then
@@ -425,6 +434,8 @@ parse_gcc_output() {
 
 if match "$TASK" "VERIFIER_error"; then
   ARGS="verifier_error_is_error"
+elif match "$TASK" "assert"; then
+    ARGS="failed_assertion"
 elif match "$TASK" "memcleanup"; then
     ARGS="no_error_recovery,memleak_is_error,exit_leaks"
 elif match "$TASK" "memtrack"; then
