@@ -880,6 +880,45 @@ bool handleStrncpy(
     return true;
 }
 
+bool handleTime(
+    SymState                                    &dst,
+    SymExecCore                                 &core,
+    const CodeStorage::Insn                     &insn,
+    const char                                  *name)
+{
+    // ret = time(*seconds)
+    const CodeStorage::TOperandList &opList = insn.operands;
+    if (/* dst + fnc + seconds */ 3 != opList.size())
+    {
+        emitPrototypeError(&insn.loc, name);
+        return false;
+    }
+
+    SymHeap &sh = core.sh();
+    CL_DEBUG_MSG(&insn.loc, "executing " << name << "()");
+    // current time as an unknown value
+    TValId val = sh.valCreate(VT_UNKNOWN, VO_ASSIGNED);
+
+    const struct cl_operand &opDst = opList[0];
+    if (CL_OPERAND_VOID != opDst.code) {
+        const FldHandle fldDst = core.fldByOperand(opDst);
+        // set the returned value to a new value
+        core.setValueOf(fldDst, val);
+    }
+
+    const TValId valSeconds = core.valFromOperand(opList[/* seconds */ 2]);
+    if (VAL_NULL != valSeconds) {
+        const struct cl_operand &opSeconds = opList[2];
+        const FldHandle fldSeconds = core.fldByOperand(opSeconds);
+        // set the argument to a new value
+        core.setValueOf(fldSeconds, val);
+    }
+
+    // insert the resulting heap
+    dst.insert(sh);
+    return true;
+}
+
 bool handleExpect(
         SymState                                    &dst,
         SymExecCore                                 &core,
@@ -938,6 +977,8 @@ bool handleAssume(
     return true;
 }
 
+// for __VERIFIER_nondet_u* <0..MAX_*>
+// for rand, random <0..RAND_MAX>
 bool handleNondetInt(
         SymState                                    &dst,
         SymExecCore                                 &core,
@@ -958,13 +999,21 @@ bool handleNondetInt(
     const struct cl_operand &opDst = opList[0];
     const FldHandle fldDst = core.fldByOperand(opDst);
 
-    static const char namePrefixUnsigned[] = "__VERIFIER_nondet_u";
-    static const size_t namePrefixLength = sizeof(namePrefixUnsigned) - 1U;
-    std::string namePrefix(name);
-    if (namePrefixLength < namePrefix.size())
-        namePrefix.resize(namePrefixLength);
+    bool isUnsigned = false;
+    if (STREQ(name, "rand")) {
+        isUnsigned = true;
+    } else if (STREQ(name, "random")) {
+        isUnsigned = true;
+    } else {
+        static const char namePrefixUnsigned[] = "__VERIFIER_nondet_u";
+        static const size_t namePrefixLength = sizeof(namePrefixUnsigned) - 1U;
+        std::string namePrefix(name);
+        if (namePrefixLength < namePrefix.size())
+            namePrefix.resize(namePrefixLength);
+        isUnsigned = std::string(namePrefixUnsigned) == namePrefix;
+    }
 
-    if (std::string(namePrefixUnsigned) == namePrefix) {
+    if (isUnsigned) {
         // an unsigned value
         IR::Range unsignedRng = {
             /* lo        */ 0,
@@ -1339,6 +1388,11 @@ BuiltInTable::BuiltInTable()
     tbl_["strcmp"]                                  = handleStrcmp;
     tbl_["strlen"]                                  = handleStrlen;
     tbl_["strncpy"]                                 = handleStrncpy;
+    tbl_["time"]                                    = handleTime;
+    tbl_["srand"]                                   = handleNoOp;
+    tbl_["srandom"]                                 = handleNoOp;
+    tbl_["rand"]                                    = handleNondetInt;
+    tbl_["random"]                                  = handleNondetInt;
 
     // <assert.h>
     tbl_["__assert_fail"]                           = handleAssertFail;
