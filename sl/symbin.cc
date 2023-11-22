@@ -512,8 +512,15 @@ bool handleMalloc(
 
     if (isSingular(size))
         CL_DEBUG_MSG(lw, "executing malloc(" << size.lo << ")");
-    else
+    else {
+#if SE_JOIN_ON_LOOP_EDGES_ONLY < 0
+// without join we don't want to allow interval-sized allocated blocks
+        CL_ERROR_MSG(lw, "size arg of malloc() is not a known integer");
+        core.printBackTrace(ML_ERROR);
+#else
         CL_DEBUG_MSG(lw, "executing malloc(/* size given as int range */)");
+#endif
+    }
 
     core.execHeapAlloc(dst, insn, size, /* nullified */ false);
     return true;
