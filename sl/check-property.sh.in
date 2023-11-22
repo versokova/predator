@@ -114,13 +114,13 @@ OVERAPPROX=no
 TRACE="/dev/fd/2"
 
 if [ `uname` = Darwin ]; then
-  SHA1SUM='shasum'
+  SHA256SUM='shasum -a 256'
   ABSPATH='realpath'
   SED="sed -i ''"
   # mac os doesn't support long option names
   ARGS=$(getopt p:t:x:d:v $*)
 else
-  SHA1SUM='sha1sum'
+  SHA256SUM='sha256sum'
   ABSPATH='readlink -f'
   SED='sed -i'
   ARGS=$(getopt -o p:t:x:d:v -l "propertyfile:,trace:,xmltrace:,depth:,verbose" -n "$SELF" -- "$@")
@@ -233,7 +233,8 @@ report_unsafe() {
     fi
 
     # change witness XML
-    HASH=`(${SHA1SUM} "$SRC_FILE" | sed 's/ .*//')`
+    HASH=`(${SHA256SUM} "$SRC_FILE" | sed 's/ .*//')`
+    CREATE=`(date -u '+%FT%TZ')`
 
     if test -z "$HASH"; then
       printf "%s: error: failed to generate hash for: %s\n" "$SELF" \
@@ -245,10 +246,16 @@ report_unsafe() {
         "$PRP_FILE" >&2
     fi
 
+    if test -z "$CREATE"; then
+      printf "%s: error: failed to generate creation time from: %s\n" "$SELF" \
+        "$PRP_FILE" >&2
+    fi
+
     if test -n "$XMLTRACE"; then
       ${SED} s/__SRCFILEHASH__/"${HASH}"/ "$XMLTRACE"
       ${SED} s/__SPECIFICATION__/"${SPEC}"/ "$XMLTRACE"
       ${SED} s/__ARCHITECTURE__/"${ARCH}bit"/ "$XMLTRACE"
+      ${SED} s/__CREATIONTIME__/"${CREATE}"/ "$XMLTRACE"
     fi
 
     exit 0
@@ -260,7 +267,8 @@ report_safe() {
     report_result "TRUE" "" "$2"
     # generate correctness witness with all properties
     SPEC=`cat "$PRP_FILE"`
-    HASH=`(${SHA1SUM} "$SRC_FILE" | sed 's/ .*//')`
+    HASH=`(${SHA256SUM} "$SRC_FILE" | sed 's/ .*//')`
+    CREATE=`(date -u '+%FT%TZ')`
 
     if test -z "$HASH"; then
       printf "%s: error: failed to generate hash for: %s\n" "$SELF" \
@@ -309,6 +317,7 @@ report_safe() {
 \t<key attr.name=\"memoryModel\" attr.type=\"string\" for=\"graph\" id=\"memorymodel\"/>\n\
 \t<key attr.name=\"architecture\" attr.type=\"string\" for=\"graph\" id=\"architecture\"/>\n\
 \t<key attr.name=\"producer\" attr.type=\"string\" for=\"graph\" id=\"producer\"/>\n\
+\t<key attr.name=\"creationTime\" attr.type=\"string\" for=\"graph\" id=\"creationtime\"/>\n\
 \t<key attr.name=\"sourcecode\" attr.type=\"string\" for=\"edge\" id=\"sourcecode\"/>\n\
 \t<key attr.name=\"startline\" attr.type=\"int\" for=\"edge\" id=\"startline\"/>\n\
 \t<key attr.name=\"startoffset\" attr.type=\"int\" for=\"edge\" id=\"startoffset\"/>\n\
@@ -330,6 +339,7 @@ report_safe() {
 \t<data key=\"programhash\">${HASH}</data>\n\
 \t<data key=\"memorymodel\">precise</data>\n\
 \t<data key=\"architecture\">${ARCH}bit</data>\n\
+\t<data key=\"creationtime\">${CREATE}</data>\n\
 \t<data key=\"programfile\">${SRC_FILE}</data>\n\
 \t<data key=\"witness-type\">correctness_witness</data>\n\
 \t<node id=\"A1\">\n\

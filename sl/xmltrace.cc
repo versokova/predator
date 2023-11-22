@@ -93,6 +93,7 @@ const std::string START       = "<?xml version=\"1.0\" encoding=\"UTF-8\" standa
 \t<key attr.name=\"memoryModel\" attr.type=\"string\" for=\"graph\" id=\"memorymodel\"/>\n\
 \t<key attr.name=\"architecture\" attr.type=\"string\" for=\"graph\" id=\"architecture\"/>\n\
 \t<key attr.name=\"producer\" attr.type=\"string\" for=\"graph\" id=\"producer\"/>\n\
+\t<key attr.name=\"creationTime\" attr.type=\"string\" for=\"graph\" id=\"creationtime\"/>\n\
 \t<key attr.name=\"sourcecode\" attr.type=\"string\" for=\"edge\" id=\"sourcecode\"/>\n\
 \t<key attr.name=\"startline\" attr.type=\"int\" for=\"edge\" id=\"startline\"/>\n\
 \t<key attr.name=\"startoffset\" attr.type=\"int\" for=\"edge\" id=\"startoffset\"/>\n\
@@ -113,7 +114,8 @@ const std::string START       = "<?xml version=\"1.0\" encoding=\"UTF-8\" standa
 \t<data key=\"specification\">__SPECIFICATION__</data>\n\
 \t<data key=\"programhash\">__SRCFILEHASH__</data>\n\
 \t<data key=\"memorymodel\">precise</data>\n\
-\t<data key=\"architecture\">__ARCHITECTURE__</data>\n";
+\t<data key=\"architecture\">__ARCHITECTURE__</data>\n\
+\t<data key=\"creationtime\">__CREATIONTIME__</data>\n";
 
 
 const std::string END               = "</graph>\n</graphml>";
