@@ -1243,7 +1243,7 @@ bool handleAssertFail(
 
     // print the error message
     CL_ERROR_MSG(loc, "assertion failed: " << strCond);
-    XML_ERROR_MSG(loc, "assertion failed: " << strCond);
+    XML_ERROR_ASSERT_MSG(/* loc, */"assertion failed: " << strCond);
 
     // print backtrace
     if (GlConf::data.failedAssertion) {

@@ -29,3 +29,12 @@ void XMLTraceEnd() ;
     s << b;                                              \
     XMLTraceBegin(NULL,-1, str);      \
 }while(0)
+
+// HACK !!! for SV-COMP reach_error not supported - used assert
+// do not remember last location
+#define XML_ERROR_ASSERT_MSG(b) do { \
+    std::string str;                                    \
+    std::stringstream s(str);                                      \
+    s << b;                                              \
+    XMLTraceBegin(NULL,-1, str);      \
+}while(0)
