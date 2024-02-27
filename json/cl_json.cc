@@ -648,6 +648,42 @@ static std::string to_json(const Insn &i) {
     INDENT_DOWN;
     out << INDENT << ">,\n";
 
+    // list of variables which could be killed after instruction execution
+    if(i.varsToKill.size()>0) {
+        out << INDENT << "\"vars_to_kill\": [ ";
+        int nlt=0;
+        for (const KillVar &kv : i.varsToKill) {
+            if(nlt++>0) out << ", ";
+            out << conv_uid(kv.uid);
+        }
+        out << " ],\n";
+    }
+
+    // list of variables which could be killed after terminal instruction
+    // execution and if you jump on specific target
+    // if they are in vars_to_kill, they are not here
+    if(i.killPerTarget.size()>0) {
+        out << INDENT << "\"vars_to_kill_per_target\": [\n";
+
+        // for(unsigned idx: i.killPerTarget) {
+        // for(const int& idx : i.killPerTarget) {
+        int mlt=0;
+        for (unsigned idx = 0; idx < i.killPerTarget.size(); ++idx) {
+            const TKillVarList &kList = i.killPerTarget[idx];
+            if(kList.size()>0) {
+                if(mlt++>0) out << INDENT << ", ";
+                out << INDENT << "(" << to_json(i.targets[idx]) << ", [ ";
+                int nlt=0;
+                for (const KillVar &kv : kList) {
+                    if(nlt++>0) out << ", ";
+                    out << conv_uid(kv.uid);
+                }
+                out << " ])\n";
+            }
+        }
+        out << " ],\n";
+    }
+
 #if 0
     // target basic blocs of terminal jump instructions
     // REDUNTAND INFORMATION
