@@ -26,6 +26,8 @@ type block = {
 type insn = {
   code : cl_insn_e;
   ?loc : cl_loc option;
+  ~vars_to_kill : cl_uid list;
+  ~vars_to_kill_per_target :(cl_uid * cl_uid list) list; (* block, [vars] *)
   ~loop_closing_targets : cl_uid list;
   (* ?specs <ocaml mutable> : state option; *)
 }
