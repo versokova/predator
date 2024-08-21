@@ -1714,8 +1714,9 @@ void SymExecCore::execHeapRealloc(
             return;
         }
 
-        // TODO the new address is different from the old address: test-0258.c
-        //      need explicit neq edge
+        // the new address is different from the old address: test-0258.c
+        // need explicit neq edge
+        sh_.addNeq(valDst, valAddr);
 
         TSizeRange oldsize = valSizeOfTarget(sh_, valAddr);
         int diff = oldsize.lo - size.lo;
