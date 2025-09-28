@@ -16,7 +16,7 @@
 # along with predator.  If not, see <http://www.gnu.org/licenses/>.
 
 # project metadata
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 project(json C CXX)
 enable_testing()
 
@@ -30,6 +30,15 @@ else()
     add_definitions("-O3 -DNDEBUG")
 endif()
 
+# check whether the long long type is available and greater than long
+include(CheckTypeSize)
+check_type_size("long"      SIZEOF_LONG)
+check_type_size("long long" SIZEOF_LONG_LONG)
+if("${SIZEOF_LONG_LONG}" AND "${SIZEOF_LONG_LONG}" GREATER "${SIZEOF_LONG}")
+    add_definitions("-DUSE_LONG_LONG")
+    message (STATUS "Use of long long enabled...")
+endif()
+
 # libjson_core.a
 add_library(json_core STATIC
     cl_json.cc)
@@ -38,14 +47,16 @@ add_library(json_core STATIC
 CL_BUILD_COMPILER_PLUGIN(json json_core ../cl_build)
 
 # get the full path of libjson.so/.dylib
-get_property(JSON_PLUG TARGET json PROPERTY LOCATION)
-message (STATUS "JSON_PLUG: ${JSON_PLUG}")
+set(JSON_PLUG $<TARGET_FILE:json>)
 
 #helping script
-configure_file(${PROJECT_SOURCE_DIR}/json_dumper.sh.in
-    ${PROJECT_BINARY_DIR}/json_dumper.sh        @ONLY)
-configure_file(${PROJECT_SOURCE_DIR}/call_graph.sh.in
-    ${PROJECT_BINARY_DIR}/call_graph.sh         @ONLY)
+foreach(file "json_dumper.sh" "call_graph.sh")
+    configure_file(${json_SOURCE_DIR}/${file}.in
+                   ${json_BINARY_DIR}/${file}.imd @ONLY)
+    file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file}
+                  INPUT  ${CMAKE_CURRENT_BINARY_DIR}/${file}.imd)
+endforeach()
+
 
 # make install
 install(TARGETS json DESTINATION lib)
@@ -94,14 +105,19 @@ set(tests
 set(cost 1)
 
 if(ENABLE_LLVM) # -----------------------------------------------------------
-	set(cmd_cc1 "-S -emit-llvm")
+set(cmd_cc1 "-S -emit-llvm -Xclang -fsanitize-address-use-after-scope")
+
+if(LLVM_VERSION VERSION_GREATER "12.0")
+    # disable new pass manager for LLVM 13+
+    set(OPT_HOST "${OPT_HOST} -enable-new-pm=0")
+endif()
 
     foreach (num ${tests})
         set(cmd "LC_ALL=C CCACHE_DISABLE=1 ${CLANG_HOST}")
 
         # we use the following flag to avoid differences on 32bit vs 64bit archs
         # in the error output, which is checked for exact match
-        set(cmd "${cmd} -w -g -m32 ${cmd_cc1}")
+        set(cmd "${cmd} -w -g -m64 ${cmd_cc1}")
         set(cmd "${cmd} -I../include/predator-builtins -DPREDATOR")
         set(cmd "${cmd} ${testdir}/test-${num}.c -o - | ")
         set(cmd "${cmd} ${OPT_HOST} -o /dev/null -lowerswitch")
@@ -126,7 +142,7 @@ else() # --------------------------------------------------------------------
 
         # we use the following flag to avoid differences on 32bit vs 64bit archs
         # in the error output, which is checked for exact match
-        set(cmd "${cmd} -m32")
+        set(cmd "${cmd} -m64")
 
         # use C++ compiler if requested:
         if (ENABLE_CC1_PLUS)
