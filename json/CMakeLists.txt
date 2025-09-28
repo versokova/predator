@@ -117,7 +117,7 @@ endif()
 
         # we use the following flag to avoid differences on 32bit vs 64bit archs
         # in the error output, which is checked for exact match
-        set(cmd "${cmd} -w -g -m64 ${cmd_cc1}")
+        set(cmd "${cmd} -w -g -m64 -std=gnu99 ${cmd_cc1}")
         set(cmd "${cmd} -I../include/predator-builtins -DPREDATOR")
         set(cmd "${cmd} ${testdir}/test-${num}.c -o - | ")
         set(cmd "${cmd} ${OPT_HOST} -o /dev/null -lowerswitch")
@@ -139,6 +139,9 @@ endif()
 else() # --------------------------------------------------------------------
     foreach (num ${tests})
         set(cmd "LC_ALL=C CCACHE_DISABLE=1 ${GCC_HOST}")
+
+        # gcc-15 defaults to -std=gnu23 and the tests are not ready for that
+        set(cmd "${cmd} -std=gnu99")
 
         # we use the following flag to avoid differences on 32bit vs 64bit archs
         # in the error output, which is checked for exact match

@@ -38,32 +38,32 @@ atdgen_bug Var.ml
 atdgen_bug Storage.mli
 atdgen_bug Storage.ml
 
-ocamlfind ocamlc -c Loc.mli -package atdgen
-ocamlfind ocamlc -c Loc.ml -package atdgen
-ocamlfind ocamlc -c Type.mli -package atdgen
-ocamlfind ocamlc -c Type.ml -package atdgen
-ocamlfind ocamlc -c Operand.mli -package atdgen
-ocamlfind ocamlc -c Operand.ml -package atdgen
-ocamlfind ocamlc -c Fnc.mli -package atdgen
-ocamlfind ocamlc -c Fnc.ml -package atdgen
-ocamlfind ocamlc -c Var.mli -package atdgen
-ocamlfind ocamlc -c Var.ml -package atdgen
-ocamlfind ocamlc -c Storage.mli -package atdgen
-ocamlfind ocamlc -c Storage.ml -package atdgen
+ocamlfind ocamlc -c Loc.mli -package atdgen-runtime
+ocamlfind ocamlc -c Loc.ml -package atdgen-runtime
+ocamlfind ocamlc -c Type.mli -package atdgen-runtime
+ocamlfind ocamlc -c Type.ml -package atdgen-runtime
+ocamlfind ocamlc -c Operand.mli -package atdgen-runtime
+ocamlfind ocamlc -c Operand.ml -package atdgen-runtime
+ocamlfind ocamlc -c Fnc.mli -package atdgen-runtime
+ocamlfind ocamlc -c Fnc.ml -package atdgen-runtime
+ocamlfind ocamlc -c Var.mli -package atdgen-runtime
+ocamlfind ocamlc -c Var.ml -package atdgen-runtime
+ocamlfind ocamlc -c Storage.mli -package atdgen-runtime
+ocamlfind ocamlc -c Storage.ml -package atdgen-runtime
 
-ocamlfind ocamlc -c ../json/Check.ml -package atdgen -o "$BUILDDIR"/Check
-ocamlfind ocamlc -o check Loc.cmo Type.cmo Operand.cmo Fnc.cmo Var.cmo Storage.cmo Check.cmo  -package atdgen  -linkpkg
+ocamlfind ocamlc -c ../json/Check.ml -package atdgen-runtime -o "$BUILDDIR"/Check
+ocamlfind ocamlc -o check Loc.cmo Type.cmo Operand.cmo Fnc.cmo Var.cmo Storage.cmo Check.cmo  -package atdgen-runtime  -linkpkg
 
 )
 
 # State.cmo --> Contract.cmo
 
 exit
-#ocamlfind ocamlopt -c test.ml -package atdgen
-#ocamlfind ocamlopt -o test Loc.cmx Type.cmx Operand.cmx Fnc.cmx Var.cmx Storage.cmx test.cmx  -package atdgen  -linkpkg
-ocamlfind ocamlopt -c abduce.ml -package atdgen
-ocamlfind ocamlopt -o abduce Loc.cmx Type.cmx Operand.cmx Fnc.cmx Var.cmx Storage.cmx abduce.cmx  -package atdgen  -linkpkg
-ocamlc -c Loc.cmx Type.cmx Operand.cmx Fnc.cmx Var.cmx Storage.cmx abduce.cmx  -package atdgen  -linkpkg
+#ocamlfind ocamlopt -c test.ml -package atdgen-runtime
+#ocamlfind ocamlopt -o test Loc.cmx Type.cmx Operand.cmx Fnc.cmx Var.cmx Storage.cmx test.cmx  -package atdgen-runtime  -linkpkg
+ocamlfind ocamlopt -c abduce.ml -package atdgen-runtime
+ocamlfind ocamlopt -o abduce Loc.cmx Type.cmx Operand.cmx Fnc.cmx Var.cmx Storage.cmx abduce.cmx  -package atdgen-runtime  -linkpkg
+ocamlc -c Loc.cmx Type.cmx Operand.cmx Fnc.cmx Var.cmx Storage.cmx abduce.cmx  -package atdgen-runtime  -linkpkg
 exit
 #./test < ../tests/fnc.json
 ydump
